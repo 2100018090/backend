@@ -31,7 +31,7 @@ public class SecurityConfig {
             // Tentukan endpoint yang bebas diakses dan yang butuh auth
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/admin/**"
+                    "/api/admin/**", "/api/rak/**"
                 ).permitAll()
 
                 // Sisanya butuh login

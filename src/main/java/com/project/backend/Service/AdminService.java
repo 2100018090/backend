@@ -9,14 +9,10 @@ import org.springframework.stereotype.Service;
 import com.project.backend.Model.Admin;
 import com.project.backend.Repository.AdminRepository;
 
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
-public class AdminService implements UserDetailsService{
+public class AdminService{
 
     @Autowired
     private AdminRepository adminRepository;
@@ -32,39 +28,30 @@ public class AdminService implements UserDetailsService{
         return adminRepository.findById(id);
     }
 
-    public Admin createAdmin(Admin admin) {
-        if (adminRepository.existsByUsername(admin.getUsername())) {
-            throw new RuntimeException("Username sudah digunakan");
-        }
+    public Admin registerAdmin(Admin admin) {
+        // Hash password sebelum disimpan
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
         return adminRepository.save(admin);
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Admin admin = adminRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Admin tidak ditemukan"));
+    public Admin updateAdmin(Long id, Admin updatedAdmin) {
+        Optional<Admin> optionalAdmin = adminRepository.findById(id);
 
-        return User.builder()
-                .username(admin.getUsername())
-                .password(admin.getPassword())
-                .roles("ADMIN")
-                .build();
-    }
+        if (optionalAdmin.isPresent()) {
+            Admin existingAdmin = optionalAdmin.get();
 
-    public Admin updateAdmin(Long id, Admin adminDetails) {
-        Admin admin = adminRepository.findById(id).orElseThrow(() -> new RuntimeException("Admin tidak ditemukan"));
+            existingAdmin.setUsername(updatedAdmin.getUsername());
+            existingAdmin.setNama(updatedAdmin.getNama());
 
-        if (!admin.getUsername().equals(adminDetails.getUsername())
-                && adminRepository.existsByUsername(adminDetails.getUsername())) {
-            throw new RuntimeException("Username sudah digunakan oleh admin lain");
+            // Jika password baru dikirim dan tidak kosong → hash ulang
+            if (updatedAdmin.getPassword() != null && !updatedAdmin.getPassword().isBlank()) {
+                existingAdmin.setPassword(passwordEncoder.encode(updatedAdmin.getPassword()));
+            }
+
+            return adminRepository.save(existingAdmin);
+        } else {
+            throw new RuntimeException("Admin dengan ID " + id + " tidak ditemukan");
         }
-
-        admin.setUsername(adminDetails.getUsername());
-        admin.setPassword(adminDetails.getPassword());
-        admin.setNama(adminDetails.getNama());
-
-        return adminRepository.save(admin);
     }
 
     public void deleteAdmin(Long id) {

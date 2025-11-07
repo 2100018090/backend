@@ -36,7 +36,7 @@ public class AdminController {
 
     @PostMapping
     public Admin createAdmin(@RequestBody Admin admin) {
-        return adminService.createAdmin(admin);
+        return adminService.registerAdmin(admin);
     }
 
     @PutMapping("/{id}")
