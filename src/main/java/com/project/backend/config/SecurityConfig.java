@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // nonaktifkan CSRF untuk REST API
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/admin/**").permitAll() // sesuaikan dengan controller
+                        .requestMatchers("/api/admin/**", "/api/rak/**").permitAll() // sesuaikan dengan controller
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
