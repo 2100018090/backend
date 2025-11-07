@@ -15,47 +15,32 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Jika kamu punya filter JWT, bisa diinject di sini (optional)
+    // Jika pakai JWT filter, nanti bisa diinject di sini
     // private final JwtAuthenticationFilter jwtAuthFilter;
-
     // public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
-    //     this.jwtAuthFilter = jwtAuthFilter;
+    // this.jwtAuthFilter = jwtAuthFilter;
     // }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Nonaktifkan CSRF (biasanya untuk REST API)
-            .csrf(csrf -> csrf.disable())
-
-            // Tentukan endpoint yang bebas diakses dan yang butuh auth
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/admin/**", "/api/rak/**"
-                ).permitAll()
-
-                // Sisanya butuh login
-                .anyRequest().authenticated()
-            )
-
-            // Stateless karena REST API (tidak pakai session)
-            .sessionManagement(sess -> sess
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-
-        // Jika kamu pakai JWT filter, aktifkan ini
-        // http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable()) // nonaktifkan CSRF untuk REST API
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/admin/**").permitAll() // sesuaikan dengan controller
+                        .anyRequest().authenticated())
+                .sessionManagement(sess -> sess
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
 
-    // Encoder untuk password
+    // Password encoder untuk hashing
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Authentication manager (dibutuhkan untuk login)
+    // AuthenticationManager (dibutuhkan jika pakai login manual)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
