@@ -10,37 +10,55 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Jika pakai JWT filter, nanti bisa diinject di sini
-    // private final JwtAuthenticationFilter jwtAuthFilter;
-    // public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
-    // this.jwtAuthFilter = jwtAuthFilter;
-    // }
-
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // nonaktifkan CSRF untuk REST API
+                .csrf(csrf -> csrf.disable()) // nonaktifkan CSRF (wajib untuk REST API)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // aktifkan CORS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/admin/**", "/api/rak/**").permitAll() // sesuaikan dengan controller
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/buku/**").permitAll()
+                        .requestMatchers("/api/kategori/**").permitAll()
+                        .requestMatchers("/api/rak/**").permitAll()
+                        .requestMatchers("/api/admin/**").permitAll()
+                        .anyRequest().permitAll() // sementara izinkan semuanya
+                )
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
 
-    // Password encoder untuk hashing
+    // ✅ Konfigurasi CORS agar semua method (GET, POST, PUT, DELETE) diizinkan
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("*")); // izinkan semua origin (frontend mana pun)
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(false);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // AuthenticationManager (dibutuhkan jika pakai login manual)
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();

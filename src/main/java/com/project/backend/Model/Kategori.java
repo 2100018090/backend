@@ -22,4 +22,42 @@ public class Kategori {
 
     @Column(nullable = false, length = 50)
     private String nama;
+
+    public Kategori() {
+    }
+
+    public Kategori(Long id, Rak rak, String nama) {
+        this.id = id;
+        this.rak = rak;
+        this.nama = nama;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Rak getRak() {
+        return rak;
+    }
+
+    public void setRak(Rak rak) {
+        this.rak = rak;
+    }
+
+    public String getNama() {
+        return nama;
+    }
+
+    public void setNama(String nama) {
+        this.nama = nama;
+    }
+
+    
+    
 }
+
+
